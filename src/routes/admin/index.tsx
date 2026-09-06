@@ -227,7 +227,7 @@ function AdminPage() {
               }`}
             >
               <span className="text-base">♈</span>
-              <span>Burç & Numeroloji Kitaplığı</span>
+              <span>Astroloji Kitaplığı</span>
             </button>
           </div>
 
