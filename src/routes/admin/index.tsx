@@ -276,6 +276,12 @@ function AdminPage() {
               <p className="text-xs leading-relaxed text-neutral-300">
                 Astroloji, Hayat Yolu Sayısı (Numeroloji) veya İsim Analizi kitaplarınızı bu alana yükleyin. Buraya eklenen PDF'ler sadece <strong>Burç & Numeroloji</strong> bölümünde taranır; el falı analizlerini yormaz ve token harcamaz.
               </p>
+              <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-800/30 text-xs text-purple-200/90 flex items-start gap-2">
+                <span className="text-sm">💡</span>
+                <p>
+                  <strong>Neden şu an 0 kitap görünüyor?</strong> Çünkü indirdiğimiz 3 adet Cheiro/Benham kitabı el falı kitabı olduğu için <strong>"🖐 El Falı Kitaplığı"</strong> sekmesinde kayıtlıdır. Burç ve Numeroloji için indireceğiniz yeni PDF'leri aşağıdaki alana sürükleyip bırakabilir veya projedeki <code className="text-amber-300">pdfler/burc</code> klasörüne atabilirsiniz!
+                </p>
+              </div>
             </div>
           )}
 
