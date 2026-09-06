@@ -154,16 +154,16 @@ export async function sendChatMessage(
     ? `\nEkte verilen "el falı rehberi" PDF belgelerindeki bilgileri (Cheiro & Benham) temel alarak soruları cevapla.\n`
     : ''
 
-  const systemText = `
-${PALM_READING_SYSTEM_PROMPT}
+  const systemText = `Sen Cheiro ve Benham ekolünü benimsemiş bilge bir el falı danışmanısın.
 ${docInstruction}
 Kullanıcı: ${personalInfo.firstName} ${personalInfo.lastName}, ${personalInfo.age} yaşında.
 Daha önce yapılan el falı okuma özeti: ${result.summary}
+Detaylı analiz başlıkları: ${result.sections.map(s => `${s.title}: ${s.content}`).join(' | ')}
 
-Artık kullanıcının takip sorularını yanıtlıyorsun. Önceki analiz bağlamını ve el çizgisi tespitlerini harfiyen koru.
-Kullanıcının yaşını, hayallerini ve çizgilerindeki tarihleri göz önünde bulundur.
-Türkçe, bilgece, mistik ve doğrudan yüzleştirici bir dille konuş.
-`
+KULLANICININ SORULARINA CEVAP VERİRKEN:
+- KESİNLİKLE JSON KODU DÖNDÜRME! Normal, akıcı, sıcak ve bilgece bir sohbet diliyle Türkçe konuş.
+- Kullanıcının sorduğu soruları, el çizgilerindeki işaretlerle ve paylaştığı hayat detaylarıyla bağdaştırarak açıkla.
+- Geçmiş analiz bağlamını koru.`
 
   const docParts = adminDocs.map((d) => ({
     inlineData: {
