@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as HoroscopeIndexRouteImport } from './routes/horoscope/index'
 import { Route as ReadingIndexRouteImport } from './routes/reading/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HoroscopeIndexRoute = HoroscopeIndexRouteImport.update({
+  id: '/horoscope/',
+  path: '/horoscope/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReadingIndexRoute = ReadingIndexRouteImport.update({
   id: '/reading/',
   path: '/reading/',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin/': typeof AdminIndexRoute
+  '/horoscope/': typeof HoroscopeIndexRoute
   '/reading/': typeof ReadingIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminIndexRoute
+  '/horoscope': typeof HoroscopeIndexRoute
   '/reading': typeof ReadingIndexRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin/': typeof AdminIndexRoute
+  '/horoscope/': typeof HoroscopeIndexRoute
   '/reading/': typeof ReadingIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/admin/' | '/reading/'
+  fullPaths: '/' | '/about' | '/admin/' | '/horoscope/' | '/reading/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/admin' | '/reading'
-  id: '__root__' | '/' | '/about' | '/admin/' | '/reading/'
+  to: '/' | '/about' | '/admin' | '/horoscope' | '/reading'
+  id: '__root__' | '/' | '/about' | '/admin/' | '/horoscope/' | '/reading/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  HoroscopeIndexRoute: typeof HoroscopeIndexRoute
   ReadingIndexRoute: typeof ReadingIndexRoute
 }
 
@@ -92,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/horoscope/': {
+      id: '/horoscope/'
+      path: '/horoscope'
+      fullPath: '/horoscope/'
+      preLoaderRoute: typeof HoroscopeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reading/': {
       id: '/reading/'
       path: '/reading'
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminIndexRoute: AdminIndexRoute,
+  HoroscopeIndexRoute: HoroscopeIndexRoute,
   ReadingIndexRoute: ReadingIndexRoute,
 }
 export const routeTree = rootRouteImport

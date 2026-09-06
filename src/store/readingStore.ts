@@ -7,6 +7,8 @@ import type {
   ChatMessage,
   ReadingResult,
   ReadingSession,
+  SessionType,
+  HoroscopeResult,
 } from '../types'
 
 const HAND_PHOTO_SLOTS: StoredPhoto[] = [
@@ -16,15 +18,22 @@ const HAND_PHOTO_SLOTS: StoredPhoto[] = [
   { id: 'right-back', label: 'Sağ El — Arka Yüz' },
 ]
 
-function makeEmptySession(): ReadingSession {
+function makeEmptySession(sessionType: SessionType = 'palm'): ReadingSession {
   return {
     id: crypto.randomUUID(),
+    sessionType,
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    personalInfo: { firstName: '', lastName: '', age: '' },
+    personalInfo: {
+      firstName: '',
+      lastName: '',
+      age: '',
+      birthDate: { day: '1', month: '1', year: '1995' },
+    },
     photos: HAND_PHOTO_SLOTS.map((p) => ({ ...p })),
     selfIntro: '',
     result: null,
+    horoscopeResult: null,
     chatHistory: [],
     step: 'personal',
   }
@@ -38,7 +47,7 @@ interface SessionsStore {
   isLoading: boolean
 
   // Session management
-  createSession: () => string
+  createSession: (sessionType?: SessionType) => string
   setActiveSession: (id: string) => void
   deleteSession: (id: string) => void
 
@@ -49,6 +58,7 @@ interface SessionsStore {
   removePhoto: (id: string) => void
   setSelfIntro: (text: string) => void
   setResult: (result: ReadingResult) => void
+  setHoroscopeResult: (result: HoroscopeResult) => void
   addChatMessage: (msg: ChatMessage) => void
   setIsLoading: (loading: boolean) => void
 }
@@ -73,30 +83,25 @@ export const useSessionsStore = create<SessionsStore>()(
       activeSessionId: null,
       isLoading: false,
 
-      // ── Session management ──────────────────────────────────────────────
-
-      createSession: () => {
-        const s = makeEmptySession()
-        set((state) => ({ sessions: [...state.sessions, s], activeSessionId: s.id }))
-        return s.id
+      createSession: (sessionType: SessionType = 'palm') => {
+        const newSession = makeEmptySession(sessionType)
+        set((s) => ({
+          sessions: [newSession, ...s.sessions],
+          activeSessionId: newSession.id,
+        }))
+        return newSession.id
       },
 
       setActiveSession: (id) => set({ activeSessionId: id }),
 
-      deleteSession: (id) => {
-        set((state) => {
-          const sessions = state.sessions.filter((s) => s.id !== id)
-          const activeSessionId =
-            state.activeSessionId === id
-              ? sessions.length > 0
-                ? sessions[sessions.length - 1].id
-                : null
-              : state.activeSessionId
-          return { sessions, activeSessionId }
-        })
-      },
-
-      // ── Active session actions ──────────────────────────────────────────
+      deleteSession: (id) =>
+        set((s) => {
+          const filtered = s.sessions.filter((sess) => sess.id !== id)
+          return {
+            sessions: filtered,
+            activeSessionId: s.activeSessionId === id ? (filtered[0]?.id ?? null) : s.activeSessionId,
+          }
+        }),
 
       setStep: (step) =>
         set((s) => ({ sessions: updateActive(s.sessions, s.activeSessionId, (sess) => ({ ...sess, step })) })),
@@ -137,6 +142,11 @@ export const useSessionsStore = create<SessionsStore>()(
           sessions: updateActive(s.sessions, s.activeSessionId, (sess) => ({ ...sess, result })),
         })),
 
+      setHoroscopeResult: (horoscopeResult) =>
+        set((s) => ({
+          sessions: updateActive(s.sessions, s.activeSessionId, (sess) => ({ ...sess, horoscopeResult })),
+        })),
+
       addChatMessage: (msg) =>
         set((s) => ({
           sessions: updateActive(s.sessions, s.activeSessionId, (sess) => ({
@@ -148,7 +158,7 @@ export const useSessionsStore = create<SessionsStore>()(
       setIsLoading: (isLoading) => set({ isLoading }),
     }),
     {
-      name: 'elokuma-sessions-v2',
+      name: 'elokuma-sessions-v3',
       partialize: (state) => ({
         sessions: state.sessions,
         activeSessionId: state.activeSessionId,

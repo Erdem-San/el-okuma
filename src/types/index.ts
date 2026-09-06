@@ -1,9 +1,17 @@
 // ─── Types ──────────────────────────────────────────────────────────────────
 
+export interface BirthDate {
+  day: string
+  month: string
+  year: string
+}
+
 export interface PersonalInfo {
   firstName: string
   lastName: string
   age: string
+  birthDate?: BirthDate
+  birthTime?: string // Burç için isteğe bağlı saat
 }
 
 export interface HandPhoto {
@@ -41,6 +49,19 @@ export interface ReadingSection {
   content: string
 }
 
+// Numeroloji ve Burç Sonucu
+export interface HoroscopeResult {
+  zodiacSign: string
+  zodiacElement: string
+  lifePathNumber: number
+  isMasterNumber: boolean
+  lifePathTitle: string
+  nameDestinyNumber: number
+  headline: string
+  summary: string
+  sections: ReadingSection[]
+}
+
 // Serileştirilebilir fotoğraf (File nesnesi hariç)
 export interface StoredPhoto {
   id: string
@@ -49,19 +70,25 @@ export interface StoredPhoto {
   preview?: string
 }
 
+export type SessionType = 'palm' | 'horoscope'
+
 export interface ReadingSession {
   id: string
+  sessionType?: SessionType
   createdAt: number
   updatedAt: number
   personalInfo: PersonalInfo
   photos: StoredPhoto[]
   selfIntro: string
   result: ReadingResult | null
+  horoscopeResult?: HoroscopeResult | null
   chatHistory: ChatMessage[]
   step: WizardStep
 }
 
-// Admin
+// Admin Dosyaları & Kategori İzolasyonu
+export type DocCategory = 'palm' | 'horoscope'
+
 export interface AdminDoc {
   id: string
   name: string
@@ -69,4 +96,5 @@ export interface AdminDoc {
   uploadedAt: number
   base64: string
   mimeType: string
+  category: DocCategory
 }

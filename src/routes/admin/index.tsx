@@ -7,8 +7,8 @@ export const Route = createFileRoute('/admin/')({
   component: AdminPage,
 })
 
-// Proje içindeki pdfler klasöründe bulunan varsayılan hazır kitaplar
-const PRESET_PDFS = [
+// Proje içindeki pdfler klasöründe bulunan varsayılan hazır El Falı kitapları
+const PALM_PRESET_PDFS = [
   {
     name: "Cheiro's Language of the Hand (1897 - B/W)",
     path: '/pdfler/cheiroslanguageo00hamo_bw.pdf',
@@ -68,7 +68,7 @@ function DeleteDocModal({
 
 function AdminPage() {
   const navigate = useNavigate()
-  const { docs, addDoc, removeDoc } = useAdminStore()
+  const { docs, activeCategory, setActiveCategory, addDoc, removeDoc } = useAdminStore()
   const [deleteTarget, setDeleteTarget] = useState<AdminDoc | null>(null)
   const [uploading, setUploading] = useState(false)
   const [loadingPreset, setLoadingPreset] = useState<string | null>(null)
@@ -76,9 +76,9 @@ function AdminPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Otomatik senkron: pdfler klasöründeki dosyaları kontrol et
-  const loadPresetDoc = async (preset: typeof PRESET_PDFS[0]) => {
-    if (docs.some(d => d.name === preset.fileName || d.name === preset.name)) {
-      return // Zaten yüklü
+  const loadPresetDoc = async (preset: typeof PALM_PRESET_PDFS[0]) => {
+    if (docs.some(d => (d.name === preset.fileName || d.name === preset.name) && d.category === 'palm')) {
+      return
     }
     setLoadingPreset(preset.fileName)
     try {
@@ -93,6 +93,7 @@ function AdminPage() {
         uploadedAt: Date.now(),
         base64,
         mimeType: 'application/pdf',
+        category: 'palm',
       }
       addDoc(doc)
     } catch (err) {
@@ -126,6 +127,7 @@ function AdminPage() {
           uploadedAt: Date.now(),
           base64,
           mimeType: file.type || 'application/pdf',
+          category: activeCategory,
         }
         addDoc(doc)
       }
@@ -140,7 +142,11 @@ function AdminPage() {
     handleFileUpload(e.dataTransfer.files)
   }
 
-  const sorted = [...docs].sort((a, b) => b.uploadedAt - a.uploadedAt)
+  // Aktif kategoriye ait dökümanlar
+  const filteredDocs = docs.filter((d) =>
+    activeCategory === 'palm' ? (d.category === 'palm' || !d.category) : d.category === 'horoscope'
+  )
+  const sorted = [...filteredDocs].sort((a, b) => b.uploadedAt - a.uploadedAt)
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -167,72 +173,119 @@ function AdminPage() {
       <main className="flex-1 flex flex-col px-5 py-8 max-w-xl mx-auto w-full">
         <div className="my-auto w-full space-y-6">
           {/* Title */}
-          <div className="space-y-1">
+          <div className="space-y-1 text-center sm:text-left">
             <h1 className="text-2xl font-serif text-gradient-gold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              El Falı Rehber Kütüphanesi
+              Kozmik Bilgi Bankası
             </h1>
             <p className="text-sm" style={{ color: 'var(--cream-dim)' }}>
-              Yapay zekanın el analizinde baz alacağı PDF kitapları ve kaynakları buradan yönetin.
+              Yapay zekanın el falı veya burç analizlerinde referans alacağı kitapları kategorilerine göre yönetin.
             </p>
           </div>
 
-          {/* pdfler klasöründeki hazır kitaplar */}
-          <div className="mystic-card p-5 space-y-3" style={{ border: '1px solid var(--border-gold)' }}>
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--gold)' }}>
-                📁 Projedeki Hazır Kitaplar (pdfler Klasörü)
+          {/* Kategori Seçici Sekmeler */}
+          <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-black/50 border border-neutral-800">
+            <button
+              onClick={() => setActiveCategory('palm')}
+              className={`py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition ${
+                activeCategory === 'palm'
+                  ? 'bg-gradient-to-r from-amber-900/60 to-amber-700/60 text-amber-200 shadow-lg border border-amber-500/30'
+                  : 'text-neutral-400 hover:text-neutral-200'
+              }`}
+            >
+              <span className="text-base">🖐</span>
+              <span>El Falı Kitaplığı</span>
+            </button>
+
+            <button
+              onClick={() => setActiveCategory('horoscope')}
+              className={`py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition ${
+                activeCategory === 'horoscope'
+                  ? 'bg-gradient-to-r from-purple-900/60 to-purple-700/60 text-purple-200 shadow-lg border border-purple-500/30'
+                  : 'text-neutral-400 hover:text-neutral-200'
+              }`}
+            >
+              <span className="text-base">♈</span>
+              <span>Burç & Numeroloji Kitaplığı</span>
+            </button>
+          </div>
+
+          {/* EL FALI KATEGORİSİ İÇERİĞİ */}
+          {activeCategory === 'palm' && (
+            <div className="mystic-card p-5 space-y-3" style={{ border: '1px solid var(--border-gold)' }}>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--gold)' }}>
+                  📁 Projedeki Hazır El Falı Kitapları
+                </p>
+                <span className="text-xs" style={{ color: 'var(--cream-dim)', opacity: 0.6 }}>3 Kitap Mevcut</span>
+              </div>
+              <p className="text-xs" style={{ color: 'var(--cream-dim)' }}>
+                Cheiro ve Benham'ın el falı kült eserleri. El okuması esnasında sadece bu kitaplar referans alınır:
               </p>
-              <span className="text-xs" style={{ color: 'var(--cream-dim)', opacity: 0.6 }}>3 Kitap Mevcut</span>
-            </div>
-            <p className="text-xs" style={{ color: 'var(--cream-dim)' }}>
-              Aşağıdaki kitaplar klasörünüzde hazır bekliyor. Tek tıkla yapay zekanın aktif hafızasına ekleyebilirsiniz:
-            </p>
 
-            <div className="space-y-2 pt-1">
-              {PRESET_PDFS.map((preset) => {
-                const isLoaded = docs.some(d => d.name === preset.fileName)
-                const isLoading = loadingPreset === preset.fileName
+              <div className="space-y-2 pt-1">
+                {PALM_PRESET_PDFS.map((preset) => {
+                  const isLoaded = docs.some(d => d.name === preset.fileName && (d.category === 'palm' || !d.category))
+                  const isLoading = loadingPreset === preset.fileName
 
-                return (
-                  <div key={preset.fileName} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-amber-900/20">
-                    <div className="min-w-0 pr-2">
-                      <p className="text-xs font-medium truncate" style={{ color: 'var(--cream)' }}>
-                        {preset.name}
-                      </p>
-                      <p className="text-[11px] mt-0.5" style={{ color: 'var(--cream-dim)', opacity: 0.4 }}>
-                        {preset.fileName}
-                      </p>
+                  return (
+                    <div key={preset.fileName} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-amber-900/20">
+                      <div className="min-w-0 pr-2">
+                        <p className="text-xs font-medium truncate" style={{ color: 'var(--cream)' }}>
+                          {preset.name}
+                        </p>
+                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--cream-dim)', opacity: 0.4 }}>
+                          {preset.fileName}
+                        </p>
+                      </div>
+
+                      {isLoaded ? (
+                        <span className="text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 font-medium"
+                          style={{ background: 'rgba(34,197,94,0.1)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)' }}>
+                          ✓ Hafızada
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => loadPresetDoc(preset)}
+                          disabled={isLoading}
+                          className="text-xs px-3 py-1.5 rounded-lg transition active:scale-95 font-medium flex items-center gap-1"
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(138,92,42,0.4), rgba(201,169,110,0.3))',
+                            border: '1px solid var(--border-gold)',
+                            color: 'var(--gold)',
+                          }}
+                        >
+                          {isLoading ? 'Ekleniyor...' : '+ Hafızaya Al'}
+                        </button>
+                      )}
                     </div>
-
-                    {isLoaded ? (
-                      <span className="text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 font-medium"
-                        style={{ background: 'rgba(34,197,94,0.1)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)' }}>
-                        ✓ Hafızada
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => loadPresetDoc(preset)}
-                        disabled={isLoading}
-                        className="text-xs px-3 py-1.5 rounded-lg transition active:scale-95 font-medium flex items-center gap-1"
-                        style={{
-                          background: 'linear-gradient(135deg, rgba(138,92,42,0.4), rgba(201,169,110,0.3))',
-                          border: '1px solid var(--border-gold)',
-                          color: 'var(--gold)',
-                        }}
-                      >
-                        {isLoading ? 'Ekleniyor...' : '+ Hafızaya Al'}
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Upload Zone */}
+          {/* BURÇ & NUMEROLOJİ KATEGORİSİ BİLGİ KARTI */}
+          {activeCategory === 'horoscope' && (
+            <div className="mystic-card p-5 space-y-3" style={{ border: '1px solid rgba(168,85,247,0.3)' }}>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider text-purple-300">
+                  ✨ Burç, Astroloji & Numeroloji Kitaplığı
+                </p>
+                <span className="text-xs text-purple-300/60">Kategori: Astroloji</span>
+              </div>
+              <p className="text-xs leading-relaxed text-neutral-300">
+                Astroloji, Hayat Yolu Sayısı (Numeroloji) veya İsim Analizi kitaplarınızı bu alana yükleyin. Buraya eklenen PDF'ler sadece <strong>Burç & Numeroloji</strong> bölümünde taranır; el falı analizlerini yormaz ve token harcamaz.
+              </p>
+            </div>
+          )}
+
+          {/* Upload Zone (Seçili Kategoriye Dosya Ekleme) */}
           <div
             className="rounded-2xl border-2 border-dashed p-8 text-center transition cursor-pointer"
-            style={{ borderColor: 'var(--border-gold)', background: 'rgba(201,169,110,0.03)' }}
+            style={{
+              borderColor: activeCategory === 'palm' ? 'var(--border-gold)' : 'rgba(168,85,247,0.4)',
+              background: activeCategory === 'palm' ? 'rgba(201,169,110,0.03)' : 'rgba(168,85,247,0.03)',
+            }}
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
@@ -240,22 +293,29 @@ function AdminPage() {
             {uploading ? (
               <div className="space-y-2">
                 <div className="text-3xl animate-pulse">📄</div>
-                <p className="text-sm" style={{ color: 'var(--gold)' }}>PDF okunuyor ve kaydediliyor...</p>
+                <p className="text-sm" style={{ color: activeCategory === 'palm' ? 'var(--gold)' : '#c084fc' }}>
+                  {activeCategory === 'palm' ? 'El Falı' : 'Burç & Numeroloji'} PDF'i okunuyor ve kaydediliyor...
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="text-4xl">📥</div>
+                <div className="text-4xl">{activeCategory === 'palm' ? '📥' : '🌌'}</div>
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--cream)' }}>
-                    Farklı bir PDF dosyası sürükleyin veya tıklayın
+                    {activeCategory === 'palm' ? 'El Falı PDF' : 'Burç / Numeroloji PDF'} dosyası sürükleyin veya tıklayın
                   </p>
                   <p className="text-xs mt-1" style={{ color: 'var(--cream-dim)', opacity: 0.5 }}>
-                    Maksimum 100MB · PDF formatı
+                    Maksimum 100MB · Yalnızca {activeCategory === 'palm' ? 'El Falı' : 'Burç'} analizlerinde kullanılacaktır
                   </p>
                 </div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl"
-                  style={{ background: 'rgba(201,169,110,0.1)', border: '1px solid rgba(201,169,110,0.2)', color: 'var(--gold)', fontSize: 13 }}>
-                  + Yeni Dosya Seç
+                  style={{
+                    background: activeCategory === 'palm' ? 'rgba(201,169,110,0.1)' : 'rgba(168,85,247,0.15)',
+                    border: `1px solid ${activeCategory === 'palm' ? 'rgba(201,169,110,0.2)' : 'rgba(168,85,247,0.3)'}`,
+                    color: activeCategory === 'palm' ? 'var(--gold)' : '#c084fc',
+                    fontSize: 13,
+                  }}>
+                  + {activeCategory === 'palm' ? 'El Falı Kitabı Ekle' : 'Burç/Numeroloji Kitabı Ekle'}
                 </div>
               </div>
             )}
@@ -270,15 +330,15 @@ function AdminPage() {
             </div>
           )}
 
-          {/* Docs list */}
+          {/* Docs list (Yalnızca aktif kategori) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium tracking-widest uppercase" style={{ color: 'var(--cream-dim)', opacity: 0.4 }}>
-                Yapay Zekanın Aktif Rehberleri ({sorted.length})
+                {activeCategory === 'palm' ? 'Aktif El Falı Kitapları' : 'Aktif Burç & Numeroloji Kitapları'} ({sorted.length})
               </p>
               {sorted.length > 0 && (
-                <span className="text-[11px]" style={{ color: 'var(--gold)', opacity: 0.8 }}>
-                  ● Fal bakarken bu kitaplar taranıyor
+                <span className="text-[11px]" style={{ color: activeCategory === 'palm' ? 'var(--gold)' : '#c084fc', opacity: 0.8 }}>
+                  ● Bu modülde taranıyor
                 </span>
               )}
             </div>
@@ -287,21 +347,24 @@ function AdminPage() {
               <div className="text-center py-6 space-y-2 rounded-xl border border-dashed border-neutral-800">
                 <div className="text-3xl opacity-30">📂</div>
                 <p className="text-xs" style={{ color: 'var(--cream-dim)', opacity: 0.5 }}>
-                  Aktif kitap seçilmedi. Yukarıdaki hazır kitaplardan "+ Hafızaya Al" butonuna basarak hemen ekleyin.
+                  Bu kategoride henüz aktif kitap yok. Yukarıdaki hazır kitaplardan ekleyin veya yeni bir PDF yükleyin.
                 </p>
               </div>
             ) : (
               sorted.map((doc) => (
                 <div key={doc.id} className="mystic-card p-4 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                    style={{ background: 'rgba(201,169,110,0.08)', border: '1px solid var(--border-gold)' }}>
-                    📖
+                    style={{
+                      background: activeCategory === 'palm' ? 'rgba(201,169,110,0.08)' : 'rgba(168,85,247,0.1)',
+                      border: `1px solid ${activeCategory === 'palm' ? 'var(--border-gold)' : 'rgba(168,85,247,0.3)'}`,
+                    }}>
+                    {activeCategory === 'palm' ? '🖐' : '♈'}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: 'var(--cream)' }}>{doc.name}</p>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--cream-dim)', opacity: 0.4 }}>
-                      {formatBytes(doc.size)} · Aktif Kullanımda
+                      {formatBytes(doc.size)} · {activeCategory === 'palm' ? 'El Falı Rehberi' : 'Astroloji Rehberi'}
                     </p>
                   </div>
 
