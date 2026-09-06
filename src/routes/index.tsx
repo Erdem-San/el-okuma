@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useSessionsStore } from '../store/readingStore'
 import type { ReadingSession } from '../types'
@@ -145,6 +145,16 @@ function LandingPage() {
   const navigate = useNavigate()
   const { sessions, createSession, setActiveSession, deleteSession } = useSessionsStore()
   const [deleteTarget, setDeleteTarget] = useState<ReadingSession | null>(null)
+  
+  // Hero geçişi: 0 = El Okuma (🖐), 1 = Astroloji (♈)
+  const [heroMode, setHeroMode] = useState<0 | 1>(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroMode((prev) => (prev === 0 ? 1 : 0))
+    }, 10000)
+    return () => clearInterval(timer)
+  }, [])
 
   const handleNewPalmSession = () => {
     const id = createSession('palm')
@@ -199,14 +209,20 @@ function LandingPage() {
 
       <main className="flex-1 flex flex-col px-5 py-8 max-w-lg mx-auto w-full">
         <div className="my-auto w-full space-y-8">
-          {/* Hero — Orijinal Mistik Tasarım */}
+          {/* Hero — 10 saniyede bir dinlendirici ve pürüzsüz geçiş yapan Mistik Tasarım */}
           <div className="text-center space-y-5">
-            <div className="relative flex items-center justify-center py-2">
-              {/* Radial glow background */}
-              <div className="absolute w-36 h-36 rounded-full animate-pulse-glow pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(201,169,110,0.18) 0%, rgba(168,85,247,0.12) 50%, transparent 70%)' }} />
+            <div className="relative flex items-center justify-center py-2 h-36">
+              {/* Radial glow background - Moduna göre hafif renk geçişi */}
+              <div
+                className="absolute w-36 h-36 rounded-full animate-pulse-glow pointer-events-none transition-all duration-1000"
+                style={{
+                  background: heroMode === 0
+                    ? 'radial-gradient(circle, rgba(201,169,110,0.22) 0%, rgba(124,77,138,0.08) 50%, transparent 70%)'
+                    : 'radial-gradient(circle, rgba(168,85,247,0.22) 0%, rgba(201,169,110,0.08) 50%, transparent 70%)',
+                }}
+              />
 
-              {/* Dönen Mistik Yörünge Halkası ve Gezen Yıldızlar */}
+              {/* Dönen Mistik Yörünge Halkası ve Gezen Yıldızlar (Bozulmadan Korundu) */}
               <div className="absolute w-32 h-32 rounded-full border border-amber-500/20 animate-spin-slow pointer-events-none">
                 <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-xs">✨</span>
                 <span className="absolute top-1/2 -right-1.5 -translate-y-1/2 text-xs text-purple-300">✦</span>
@@ -222,17 +238,68 @@ function LandingPage() {
                 <span className="absolute bottom-6 right-8 text-xs text-pink-300 animate-twinkle" style={{ animationDelay: '1.5s' }}>✧</span>
               </div>
 
-              {/* El İkonu */}
-              <div className="text-6xl animate-float relative z-10 select-none drop-shadow-[0_0_25px_rgba(201,169,110,0.4)]">🖐</div>
+              {/* 1. İkon: El Simgesi (🖐) - Pürüzsüz 1.2s Crossfade */}
+              <div
+                className="text-6xl animate-float absolute z-10 select-none drop-shadow-[0_0_25px_rgba(201,169,110,0.4)] transition-all duration-1000 ease-in-out"
+                style={{
+                  opacity: heroMode === 0 ? 1 : 0,
+                  transform: heroMode === 0 ? 'scale(1)' : 'scale(0.85)',
+                  pointerEvents: heroMode === 0 ? 'auto' : 'none',
+                }}
+              >
+                🖐
+              </div>
+
+              {/* 2. İkon: Astroloji Simgesi (♈) - Pürüzsüz 1.2s Crossfade */}
+              <div
+                className="text-6xl animate-float absolute z-10 select-none drop-shadow-[0_0_25px_rgba(168,85,247,0.5)] transition-all duration-1000 ease-in-out"
+                style={{
+                  opacity: heroMode === 1 ? 1 : 0,
+                  transform: heroMode === 1 ? 'scale(1)' : 'scale(0.85)',
+                  pointerEvents: heroMode === 1 ? 'auto' : 'none',
+                }}
+              >
+                ♈
+              </div>
             </div>
-            <div className="space-y-2">
-              <h1 className="text-4xl sm:text-5xl font-serif text-gradient-mystic leading-tight"
-                style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                El Okuma
-              </h1>
-              <p className="text-sm" style={{ color: 'var(--cream-dim)' }}>
-                Yapay zeka ile ellerinizin ve yıldızlarınızın sırlarını keşfedin.
-              </p>
+
+            {/* Başlık Alanı - Yavaşça ve Pürüzsüzce Değişen Başlık */}
+            <div className="space-y-2 relative h-20 flex flex-col items-center justify-center">
+              {/* El Okuma Başlığı */}
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out"
+                style={{
+                  opacity: heroMode === 0 ? 1 : 0,
+                  transform: heroMode === 0 ? 'translateY(0px)' : 'translateY(6px)',
+                  pointerEvents: heroMode === 0 ? 'auto' : 'none',
+                }}
+              >
+                <h1 className="text-4xl sm:text-5xl font-serif text-gradient-mystic leading-tight"
+                  style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  El Okuma
+                </h1>
+                <p className="text-sm mt-1" style={{ color: 'var(--cream-dim)' }}>
+                  Yapay zeka ile avuç çizgilerinizin ve kaderinizin sırlarını keşfedin.
+                </p>
+              </div>
+
+              {/* Astroloji Başlığı */}
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out"
+                style={{
+                  opacity: heroMode === 1 ? 1 : 0,
+                  transform: heroMode === 1 ? 'translateY(0px)' : 'translateY(6px)',
+                  pointerEvents: heroMode === 1 ? 'auto' : 'none',
+                }}
+              >
+                <h1 className="text-4xl sm:text-5xl font-serif text-gradient-mystic leading-tight"
+                  style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  Astroloji
+                </h1>
+                <p className="text-sm mt-1" style={{ color: 'var(--cream-dim)' }}>
+                  Yıldız haritanız, hayat yolu sayınız ve kadim kozmik rehberiniz.
+                </p>
+              </div>
             </div>
 
             {/* Alt Alta Şık Butonlar */}
