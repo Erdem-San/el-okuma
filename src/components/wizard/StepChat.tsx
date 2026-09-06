@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { useSessionsStore, useActiveSession } from '../../store/readingStore'
 import { useChat } from '../../hooks/useChat'
 import { ChatBubble, TypingIndicator } from '../ui/ChatBubble'
+import { AnalysisDetailModal } from '../ui/AnalysisDetailModal'
 
 const SUGGESTED_QUESTIONS = [
-  'Aşk hayatım hakkında ne söyleyebilirsin?',
-  'Kariyer değişikliği yapmalı mıyım?',
-  'Yakın gelecekte ne bekliyor beni?',
-  'Güçlü ve zayıf yönlerim neler?',
+  'Kariyerimdeki o kırılma dönemi tam olarak ne zaman?',
+  'Sol elim ile sağ elim arasındaki en büyük fark ne?',
+  'Aşk hayatımda kader çizgim neye işaret ediyor?',
+  'Bastırılmış içsel yeteneğim hakkında ne dersin?',
 ]
 
 export function StepChat() {
@@ -15,6 +16,7 @@ export function StepChat() {
   const session = useActiveSession()
   const { chatHistory, sendMessage, isLoading, error } = useChat()
   const [input, setInput] = useState('')
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -37,24 +39,45 @@ export function StepChat() {
   const { result, personalInfo } = session
 
   return (
-    <div className="flex flex-col h-full" style={{ minHeight: 'calc(100dvh - 200px)' }}>
+    <div className="flex flex-col h-full relative" style={{ minHeight: 'calc(100dvh - 200px)' }}>
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 mb-4 rounded-xl"
-        style={{ background: 'rgba(17,13,9,0.8)', border: '1px solid var(--border)' }}>
-        <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, rgba(201,169,110,0.1), rgba(124,77,138,0.1))', border: '1px solid var(--border-gold)' }}>
-          🔮
+      <div className="flex items-center justify-between gap-3 px-4 py-3 mb-3 rounded-xl"
+        style={{ background: 'rgba(17,13,9,0.9)', border: '1px solid var(--border-gold)' }}>
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, rgba(201,169,110,0.15), rgba(124,77,138,0.15))', border: '1px solid var(--border-gold)' }}>
+            🔮
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold truncate" style={{ color: 'var(--cream)' }}>
+              El Falı Danışmanı
+            </p>
+            <p className="text-[11px] truncate" style={{ color: 'var(--gold)', opacity: 0.8 }}>
+              {personalInfo.firstName} ({personalInfo.age} yaş)
+            </p>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold" style={{ color: 'var(--cream)' }}>El Falı Danışmanı</p>
-          <p className="text-xs" style={{ color: 'var(--gold)', opacity: 0.7 }}>
-            {personalInfo.firstName} için analiz hazır
-          </p>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Analizleri Gör Butonu */}
+          <button
+            onClick={() => setShowAnalysisModal(true)}
+            className="text-xs px-2.5 py-1.5 rounded-lg transition font-medium flex items-center gap-1 active:scale-95"
+            style={{
+              background: 'linear-gradient(135deg, rgba(201,169,110,0.15), rgba(138,92,42,0.25))',
+              border: '1px solid var(--border-gold)',
+              color: 'var(--gold)',
+            }}
+          >
+            <span>📜</span>
+            <span>Raporu Gör</span>
+          </button>
+
+          <button onClick={() => setStep('result')} className="text-xs px-2.5 py-1.5 rounded-lg transition"
+            style={{ color: 'var(--cream-dim)', border: '1px solid var(--border)', background: 'transparent' }}>
+            ← Çık
+          </button>
         </div>
-        <button onClick={() => setStep('result')} className="text-xs px-3 py-1.5 rounded-lg transition"
-          style={{ color: 'var(--cream-dim)', border: '1px solid var(--border)', background: 'transparent' }}>
-          ← Geri
-        </button>
       </div>
 
       {/* Messages */}
@@ -67,23 +90,23 @@ export function StepChat() {
           </div>
           <div className="chat-bubble-ai">
             <p className="text-sm leading-relaxed" style={{ color: 'var(--cream)' }}>
-              Merhaba {personalInfo.firstName} ✨ El okuman tamamlandı.{' '}
+              Merhaba {personalInfo.firstName} ✨ El çizgilerini ve paylaştığın bilgileri Cheiro ekolüyle detaylıca inceledim.{' '}
               <span style={{ color: 'var(--cream-dim)', fontSize: 13 }}>
-                {result.summary.substring(0, 100)}...
+                "{result.headline}"
               </span>
               <br /><br />
-              Merak ettiklerinizi sormaktan çekinmeyin. Sizi dinliyorum 🌙
+              Yukarıdaki <strong>"📜 Raporu Gör"</strong> butonundan tüm analizlerini istediğin an tekrar okuyabilir, buradaki tespitlerle ilgili bana aklına takılan her şeyi sorabilirsin. 🌙
             </p>
           </div>
         </div>
 
         {chatHistory.length === 0 && (
-          <div className="px-2 space-y-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <p className="text-xs" style={{ color: 'var(--cream-dim)', opacity: 0.5 }}>Önerilen sorular:</p>
+          <div className="px-2 space-y-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <p className="text-xs" style={{ color: 'var(--cream-dim)', opacity: 0.5 }}>Örnek derin sorular:</p>
             <div className="flex flex-wrap gap-2">
               {SUGGESTED_QUESTIONS.map((q) => (
                 <button key={q} onClick={() => { setInput(q); inputRef.current?.focus() }}
-                  className="text-xs px-3 py-2 rounded-xl transition"
+                  className="text-xs px-3 py-2 rounded-xl text-left transition"
                   style={{ background: 'rgba(201,169,110,0.05)', border: '1px solid rgba(201,169,110,0.15)', color: 'var(--cream-dim)' }}>
                   {q}
                 </button>
@@ -95,9 +118,10 @@ export function StepChat() {
         {chatHistory.map((msg) => <ChatBubble key={msg.id} message={msg} />)}
         {isLoading && <TypingIndicator />}
         {error && (
-          <div className="text-sm text-center px-4 py-2 rounded-xl"
+          <div className="text-sm text-center px-4 py-3 rounded-xl space-y-1"
             style={{ background: 'rgba(248,113,113,0.08)', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>
-            {error}
+            <p className="font-semibold text-xs">Bağlantı Hatası</p>
+            <p className="text-xs opacity-90 font-mono break-all">{error}</p>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -112,7 +136,7 @@ export function StepChat() {
             ref={inputRef}
             className="flex-1 bg-transparent text-sm resize-none outline-none leading-relaxed"
             style={{ color: 'var(--cream)', maxHeight: '8em', minHeight: '1.5em', fontFamily: "'Inter', sans-serif" }}
-            placeholder="Bir soru sorun... (Enter ile gönderin)"
+            placeholder="Bir soru sorun... (Örn: 35 yaşımdaki çizgi ne anlama geliyor?)"
             rows={1}
             value={input}
             onChange={(e) => {
@@ -135,6 +159,11 @@ export function StepChat() {
           </button>
         </div>
       </div>
+
+      {/* Rapor Detay Modal */}
+      {showAnalysisModal && (
+        <AnalysisDetailModal onClose={() => setShowAnalysisModal(false)} />
+      )}
     </div>
   )
 }
