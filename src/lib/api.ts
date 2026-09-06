@@ -13,8 +13,8 @@ function getApiKey(): string {
 let cachedWorkingModel: { model: string; apiVer: string } | null = null
 
 const CANDIDATE_MODELS = [
-  'gemini-3.6-flash',
   'gemini-3.8-flash',
+  'gemini-3.6-flash',
   'gemini-3.5-flash',
   'gemini-flash-latest',
   'gemini-3.1-flash-lite',
@@ -43,6 +43,14 @@ async function requestGemini(body: unknown, apiKey: string): Promise<any> {
           continue // Bu model veya sürüm bulunamadı, bir sonrakini dene
         }
 
+        if (res.status === 503 || res.status === 429 || res.status >= 500) {
+          // Model geçici yoğunlukta veya kota sınırında -> Hemen yedek modele geç!
+          console.warn(`${model} yoğunlukta (${res.status}), sıradaki yedek modele geçiliyor...`)
+          cachedWorkingModel = null
+          lastError = await res.text()
+          continue
+        }
+
         if (!res.ok) {
           const err = await res.text()
           throw new Error(`Gemini API hatası (${res.status}): ${err}`)
@@ -54,14 +62,16 @@ async function requestGemini(body: unknown, apiKey: string): Promise<any> {
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err)
         if (message.includes('Gemini API hatası')) {
-          throw err
+          if (!message.includes('(503)') && !message.includes('(429)') && !message.includes('(500)')) {
+            throw err
+          }
         }
         lastError = message
       }
     }
   }
 
-  throw new Error(`Kullanılabilir bir Gemini modeli bulunamadı (404). Son yanıt: ${lastError}`)
+  throw new Error(`Tüm modeller denendi ancak yanıt alınamadı. Son yanıt: ${lastError}`)
 }
 
 // ─── Palm Reading Analysis ───────────────────────────────────────────────────
