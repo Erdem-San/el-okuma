@@ -17,12 +17,20 @@ export function StepChat() {
   const { chatHistory, sendMessage, isLoading, error } = useChat()
   const [input, setInput] = useState('')
   const [showAnalysisModal, setShowAnalysisModal] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const lastMessageRef = useRef<HTMLDivElement>(null)
+  const typingRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
+  // Yeni mesaj geldiğinde veya yüklenirken akıllı kaydırma
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [chatHistory, isLoading])
+    if (isLoading) {
+      // Soru sorulduğunda veya AI yazarken "yazıyor..." göstergesine kaydır
+      typingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    } else if (chatHistory.length > 0) {
+      // AI cevabı geldiğinde: Cevabın EN ALTINA değil, İLK SATIRINA (başlangıcına) odaklan!
+      lastMessageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [chatHistory.length, isLoading])
 
   const handleSend = async () => {
     const text = input.trim()
@@ -41,8 +49,8 @@ export function StepChat() {
   return (
     <div className="flex flex-col h-full relative" style={{ minHeight: 'calc(100dvh - 200px)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 px-4 py-3 mb-3 rounded-xl"
-        style={{ background: 'rgba(17,13,9,0.9)', border: '1px solid var(--border-gold)' }}>
+      <div className="flex items-center justify-between gap-3 px-4 py-3 mb-3 rounded-xl sticky top-14 z-30"
+        style={{ background: 'rgba(17,13,9,0.95)', border: '1px solid var(--border-gold)', backdropFilter: 'blur(16px)' }}>
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, rgba(201,169,110,0.15), rgba(124,77,138,0.15))', border: '1px solid var(--border-gold)' }}>
@@ -81,7 +89,7 @@ export function StepChat() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
+      <div className="flex-1 overflow-y-auto space-y-4 pb-6 pr-1 scroll-smooth">
         {/* Welcome message */}
         <div className="flex justify-start animate-fade-in">
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm mr-2 flex-shrink-0 mt-0.5"
@@ -115,8 +123,26 @@ export function StepChat() {
           </div>
         )}
 
-        {chatHistory.map((msg) => <ChatBubble key={msg.id} message={msg} />)}
-        {isLoading && <TypingIndicator />}
+        {/* Mesaj listesi */}
+        {chatHistory.map((msg, index) => {
+          const isLastMessage = index === chatHistory.length - 1
+          return (
+            <div
+              key={msg.id}
+              ref={isLastMessage ? lastMessageRef : undefined}
+              className={isLastMessage ? 'scroll-mt-24' : undefined}
+            >
+              <ChatBubble message={msg} />
+            </div>
+          )
+        })}
+
+        {isLoading && (
+          <div ref={typingRef} className="scroll-mt-20">
+            <TypingIndicator />
+          </div>
+        )}
+
         {error && (
           <div className="text-sm text-center px-4 py-3 rounded-xl space-y-1"
             style={{ background: 'rgba(248,113,113,0.08)', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>
@@ -124,12 +150,11 @@ export function StepChat() {
             <p className="text-xs opacity-90 font-mono break-all">{error}</p>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
       <div className="sticky bottom-0 pt-3 safe-bottom"
-        style={{ background: 'linear-gradient(to top, var(--bg-deep) 80%, transparent)' }}>
+        style={{ background: 'linear-gradient(to top, var(--bg-deep) 85%, transparent)' }}>
         <div className="flex items-end gap-3 p-3 rounded-2xl"
           style={{ background: 'rgba(17,13,9,0.95)', border: '1px solid var(--border-gold)', backdropFilter: 'blur(12px)' }}>
           <textarea
