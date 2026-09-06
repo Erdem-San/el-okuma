@@ -201,10 +201,29 @@ function LandingPage() {
         <div className="my-auto w-full space-y-8">
           {/* Hero — Orijinal Mistik Tasarım */}
           <div className="text-center space-y-5">
-            <div className="relative flex items-center justify-center">
-              <div className="absolute w-28 h-28 rounded-full animate-pulse-glow"
-                style={{ background: 'radial-gradient(circle, rgba(201,169,110,0.1) 0%, transparent 70%)' }} />
-              <div className="text-6xl animate-float relative z-10">🖐</div>
+            <div className="relative flex items-center justify-center py-2">
+              {/* Radial glow background */}
+              <div className="absolute w-36 h-36 rounded-full animate-pulse-glow pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(201,169,110,0.18) 0%, rgba(168,85,247,0.12) 50%, transparent 70%)' }} />
+
+              {/* Dönen Mistik Yörünge Halkası ve Gezen Yıldızlar */}
+              <div className="absolute w-32 h-32 rounded-full border border-amber-500/20 animate-spin-slow pointer-events-none">
+                <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-xs">✨</span>
+                <span className="absolute top-1/2 -right-1.5 -translate-y-1/2 text-xs text-purple-300">✦</span>
+                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-[10px] text-amber-200">★</span>
+                <span className="absolute top-1/2 -left-1.5 -translate-y-1/2 text-xs text-purple-400">✧</span>
+              </div>
+
+              {/* Ters Yönde Dönen Dış Yıldız Çemberi */}
+              <div className="absolute w-44 h-44 rounded-full border border-purple-500/15 animate-spin-reverse pointer-events-none">
+                <span className="absolute top-3 right-6 text-xs text-amber-300 animate-twinkle">⋆</span>
+                <span className="absolute bottom-4 left-6 text-xs text-purple-300 animate-twinkle" style={{ animationDelay: '1s' }}>✨</span>
+                <span className="absolute top-8 left-4 text-[10px] text-yellow-200 animate-twinkle" style={{ animationDelay: '0.5s' }}>✦</span>
+                <span className="absolute bottom-6 right-8 text-xs text-pink-300 animate-twinkle" style={{ animationDelay: '1.5s' }}>✧</span>
+              </div>
+
+              {/* El İkonu */}
+              <div className="text-6xl animate-float relative z-10 select-none drop-shadow-[0_0_25px_rgba(201,169,110,0.4)]">🖐</div>
             </div>
             <div className="space-y-2">
               <h1 className="text-4xl sm:text-5xl font-serif text-gradient-mystic leading-tight"
@@ -228,16 +247,11 @@ function LandingPage() {
 
               <button
                 onClick={handleNewHoroscopeSession}
-                className="w-full py-3.5 px-5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition active:scale-95"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(124,77,138,0.2))',
-                  border: '1px solid rgba(168,85,247,0.35)',
-                  color: '#e9d5ff',
-                }}
+                className="btn-mystic-purple w-full py-4 text-base flex items-center justify-center gap-2"
               >
                 <span>♈</span>
                 <span>Astroloji & Doğum Haritası</span>
-                <span className="text-xs text-purple-300/60 font-normal">→</span>
+                <span className="text-xs text-purple-200 font-normal">→</span>
               </button>
             </div>
           </div>
