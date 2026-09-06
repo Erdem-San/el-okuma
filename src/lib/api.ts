@@ -1,5 +1,5 @@
 import type { PersonalInfo, HandPhoto, ReadingResult, ChatMessage } from '../types'
-import { GEMINI_API_BASE, GEMINI_MODEL, PALM_READING_SYSTEM_PROMPT } from './constants'
+import { PALM_READING_SYSTEM_PROMPT } from './constants'
 import { stripBase64Prefix } from './imageUtils'
 import { useAdminStore } from '../store/adminStore'
 
@@ -7,6 +7,62 @@ function getApiKey(): string {
   const key = import.meta.env.VITE_GEMINI_KEY
   if (!key) throw new Error('VITE_GEMINI_KEY ortam değişkeni tanımlı değil. .env.local dosyanıza ekleyin.')
   return key
+}
+
+// ─── Otomatik Model Keşfi ve Fallback Sistemi ────────────────────────────────
+let cachedWorkingModel: { model: string; apiVer: string } | null = null
+
+const CANDIDATE_MODELS = [
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-flash-002',
+  'gemini-1.5-flash-001',
+]
+
+async function requestGemini(body: unknown, apiKey: string): Promise<any> {
+  const modelsToTry = cachedWorkingModel
+    ? [cachedWorkingModel.model, ...CANDIDATE_MODELS.filter((m) => m !== cachedWorkingModel?.model)]
+    : CANDIDATE_MODELS
+
+  let lastError = ''
+
+  for (const model of modelsToTry) {
+    const versions = cachedWorkingModel?.model === model ? [cachedWorkingModel.apiVer] : ['v1beta', 'v1']
+    for (const apiVer of versions) {
+      const url = `https://generativelanguage.googleapis.com/${apiVer}/models/${model}:generateContent?key=${apiKey}`
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+
+        if (res.status === 404) {
+          lastError = await res.text()
+          continue // Bu model veya sürüm bulunamadı, bir sonrakini dene
+        }
+
+        if (!res.ok) {
+          const err = await res.text()
+          throw new Error(`Gemini API hatası (${res.status}): ${err}`)
+        }
+
+        const data = await res.json()
+        cachedWorkingModel = { model, apiVer }
+        return data
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err)
+        if (message.includes('Gemini API hatası')) {
+          throw err
+        }
+        lastError = message
+      }
+    }
+  }
+
+  throw new Error(`Kullanılabilir bir Gemini modeli bulunamadı (404). Son yanıt: ${lastError}`)
 }
 
 // ─── Palm Reading Analysis ───────────────────────────────────────────────────
@@ -22,7 +78,7 @@ export async function analyzePalmReading(
   const validPhotos = photos.filter((p) => p.base64)
 
   const docInstruction = adminDocs.length > 0
-    ? `\nÖNEMLİ: Ekte verilen ${adminDocs.length} adet "el falı rehberi" PDF belgesini tek ve mutlak referans kaynağı olarak baz al. Buradaki kurallar, çizgiler ve işaret yorumlarını harfiyen uygula.\n`
+    ? `\nÖNEMLİ: Ekte verilen ${adminDocs.length} adet "el falı rehberi" PDF belgesindeki (Cheiro ve Benham ekolü) kuralları tek ve mutlak referans kaynağı olarak baz al. Buradaki çizgiler, tepeler, yaş hesaplama formülleri ve işaret yorumlarını harfiyen uygula.\n`
     : ''
 
   const userPrompt = `
@@ -72,21 +128,7 @@ Lütfen kapsamlı bir el falı oku ve sadece JSON formatında yanıt ver.
     },
   }
 
-  const res = await fetch(
-    `${GEMINI_API_BASE}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    },
-  )
-
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Gemini API hatası: ${res.status} ${err}`)
-  }
-
-  const data = await res.json()
+  const data = await requestGemini(body, apiKey)
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text
 
   if (!text) throw new Error('Gemini boş yanıt döndürdü.')
@@ -110,7 +152,7 @@ export async function sendChatMessage(
   const adminDocs = useAdminStore.getState().docs
 
   const docInstruction = adminDocs.length > 0
-    ? `\nEkte verilen "el falı rehberi" PDF belgelerindeki bilgileri temel alarak soruları cevapla.\n`
+    ? `\nEkte verilen "el falı rehberi" PDF belgelerindeki bilgileri (Cheiro & Benham) temel alarak soruları cevapla.\n`
     : ''
 
   const systemText = `
@@ -119,8 +161,9 @@ ${docInstruction}
 Kullanıcı: ${personalInfo.firstName} ${personalInfo.lastName}, ${personalInfo.age} yaşında.
 Daha önce yapılan el falı okuma özeti: ${result.summary}
 
-Artık kullanıcının takip sorularını yanıtlıyorsun. Önceki analiz bağlamını koru.
-Türkçe, mistik ve sıcak bir dille konuş.
+Artık kullanıcının takip sorularını yanıtlıyorsun. Önceki analiz bağlamını ve el çizgisi tespitlerini harfiyen koru.
+Kullanıcının yaşını, hayallerini ve çizgilerindeki tarihleri göz önünde bulundur.
+Türkçe, bilgece, mistik ve doğrudan yüzleştirici bir dille konuş.
 `
 
   const docParts = adminDocs.map((d) => ({
@@ -131,7 +174,6 @@ Türkçe, mistik ve sıcak bir dille konuş.
   }))
 
   const contents = [
-    // Inject previous analysis and docs as context
     {
       role: 'user',
       parts: [
@@ -143,7 +185,6 @@ Türkçe, mistik ve sıcak bir dille konuş.
       role: 'model',
       parts: [{ text: `Rehber belgeleri inceledim. El okuman tamamlandı: ${result.summary}` }],
     },
-    // Chat history
     ...chatHistory.map((m) => ({
       role: m.role === 'user' ? 'user' : 'model',
       parts: [{ text: m.content }],
@@ -163,21 +204,7 @@ Türkçe, mistik ve sıcak bir dille konuş.
     },
   }
 
-  const res = await fetch(
-    `${GEMINI_API_BASE}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    },
-  )
-
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Gemini API hatası: ${res.status} ${err}`)
-  }
-
-  const data = await res.json()
+  const data = await requestGemini(body, apiKey)
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text
   if (!text) throw new Error('Boş yanıt')
   return text
