@@ -1,6 +1,6 @@
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-export const GEMINI_MODEL = 'gemini-1.5-flash'
+export const GEMINI_MODEL = 'gemini-3.6-flash'
 export const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 
 export const MAX_INTRO_CHARS = 1000
