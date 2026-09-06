@@ -98,8 +98,11 @@ export async function analyzePalmReading(
 
   const validPhotos = photos.filter((p) => p.base64)
 
-  const docInstruction = palmDocs.length > 0
-    ? `\nÖNEMLİ: Ekte verilen ${palmDocs.length} adet "el falı rehberi" PDF belgesindeki (Cheiro ve Benham ekolü) kuralları tek ve mutlak referans kaynağı olarak baz al. Buradaki çizgiler, tepeler, yaş hesaplama formülleri ve işaret yorumlarını harfiyen uygula.\n`
+  // Token taşmasını önlemek için en fazla 1 adet kapsamlı el falı kitabı gönder
+  const safePalmDocs = palmDocs.slice(0, 1)
+
+  const docInstruction = safePalmDocs.length > 0
+    ? `\nÖNEMLİ: Ekte verilen "${safePalmDocs[0].name}" el falı rehberi belgesindeki (Cheiro ve Benham ekolü) kuralları tek ve mutlak referans kaynağı olarak baz al. Buradaki çizgiler, tepeler, yaş hesaplama formülleri ve işaret yorumlarını harfiyen uygula.\n`
     : ''
 
   const birthDateStr = personalInfo.birthDate
@@ -125,7 +128,7 @@ Lütfen kapsamlı bir el falı oku ve sadece JSON formatında yanıt ver.
     },
   }))
 
-  const docParts = palmDocs.map((d) => ({
+  const docParts = safePalmDocs.map((d) => ({
     inlineData: {
       mimeType: d.mimeType || 'application/pdf',
       data: stripBase64Prefix(d.base64),
@@ -185,8 +188,12 @@ export async function analyzeHoroscope(
   const lifePath = calculateLifePathNumber(day, month, year)
   const nameDestiny = calculateNameDestinyNumber(fullName)
 
-  const docInstruction = horoscopeDocs.length > 0
-    ? `\nÖNEMLİ: Ekte verilen ${horoscopeDocs.length} adet "burç, astroloji ve numeroloji rehberi" PDF belgesindeki bilgileri temel referans al.\n`
+  // Token taşmasını (1,048,576 token limiti) önlemek için en fazla 1 adet kapsamlı referans kitap gönder
+  // Böylece PDF'lerin yüzbinlerce tokenlik devasa boyutları API sınırını aşmaz
+  const safeDocs = horoscopeDocs.slice(0, 1)
+
+  const docInstruction = safeDocs.length > 0
+    ? `\nÖNEMLİ: Ekte verilen "${safeDocs[0].name}" astroloji ve numeroloji rehberi PDF belgesindeki bilgileri temel referans al.\n`
     : ''
 
   const userPrompt = `
@@ -202,7 +209,7 @@ ${docInstruction}
 Lütfen Güneş burcu, Hayat Yolu Sayısı ve İsim frekansını birleştirerek derin, bilgece ve somut bir rapor hazırla. Sadece JSON formatında yanıt ver.
 `
 
-  const docParts = horoscopeDocs.map((d) => ({
+  const docParts = safeDocs.map((d) => ({
     inlineData: {
       mimeType: d.mimeType || 'application/pdf',
       data: stripBase64Prefix(d.base64),
@@ -262,9 +269,10 @@ export async function sendChatMessage(
 ): Promise<string> {
   const apiKey = getApiKey()
   const palmDocs = useAdminStore.getState().docs.filter((d) => d.category === 'palm' || !d.category)
+  const safePalmDocs = palmDocs.slice(0, 1)
 
-  const docInstruction = palmDocs.length > 0
-    ? `\nEkte verilen "el falı rehberi" PDF belgelerindeki bilgileri (Cheiro & Benham) temel alarak soruları cevapla.\n`
+  const docInstruction = safePalmDocs.length > 0
+    ? `\nEkte verilen "${safePalmDocs[0].name}" el falı rehberi belgesindeki bilgileri (Cheiro & Benham) temel alarak soruları cevapla.\n`
     : ''
 
   const systemText = `Sen Cheiro ve Benham ekolünü benimsemiş bilge bir el falı danışmanısın.
@@ -278,7 +286,7 @@ KULLANICININ SORULARINA CEVAP VERİRKEN:
 - Kullanıcının sorduğu soruları, el çizgilerindeki işaretlerle ve paylaştığı hayat detaylarıyla bağdaştırarak açıkla.
 - Geçmiş analiz bağlamını koru.`
 
-  const docParts = palmDocs.map((d) => ({
+  const docParts = safePalmDocs.map((d) => ({
     inlineData: {
       mimeType: d.mimeType || 'application/pdf',
       data: stripBase64Prefix(d.base64),
@@ -332,9 +340,10 @@ export async function sendHoroscopeChatMessage(
 ): Promise<string> {
   const apiKey = getApiKey()
   const horoscopeDocs = useAdminStore.getState().docs.filter((d) => d.category === 'horoscope')
+  const safeHoroscopeDocs = horoscopeDocs.slice(0, 1)
 
-  const docInstruction = horoscopeDocs.length > 0
-    ? `\nEkte verilen "astroloji ve numeroloji rehberi" PDF belgelerindeki bilgileri temel alarak soruları cevapla.\n`
+  const docInstruction = safeHoroscopeDocs.length > 0
+    ? `\nEkte verilen "${safeHoroscopeDocs[0].name}" astroloji ve numeroloji rehberi belgesindeki bilgileri temel alarak soruları cevapla.\n`
     : ''
 
   const systemText = `Sen kadim Astroloji ve Numeroloji ilminin bilge bir danışmanısın.
@@ -351,7 +360,7 @@ KULLANICININ SORULARINA CEVAP VERİRKEN:
 - Kullanıcının burcunu, Hayat Yolu Sayısını ve isminin harf frekanslarını referans alarak cevap ver.
 - Önceden oluşturulan analiz bağlamını koru.`
 
-  const docParts = horoscopeDocs.map((d) => ({
+  const docParts = safeHoroscopeDocs.map((d) => ({
     inlineData: {
       mimeType: d.mimeType || 'application/pdf',
       data: stripBase64Prefix(d.base64),

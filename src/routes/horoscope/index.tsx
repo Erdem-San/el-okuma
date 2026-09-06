@@ -356,9 +356,9 @@ function HoroscopePage() {
         {/* ADIM 2: HESAPLAMA VE YÜKLEME */}
         {step === 'loading' && (
           <div className="my-auto w-full text-center space-y-6 py-12 animate-fade-in">
-            <LoadingCrystal />
+            <LoadingCrystal mode="horoscope" title="Astroloji & Sayı Analizi Yapılıyor" icon="♈" />
             <div className="space-y-1">
-              <p className="font-serif text-xl text-amber-200" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              <p className="font-serif text-xl text-purple-200" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                 Gezegenler ve Sayılar İnceleniyor...
               </p>
               <p className="text-xs text-neutral-400">

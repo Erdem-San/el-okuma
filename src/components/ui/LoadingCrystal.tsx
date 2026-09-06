@@ -1,23 +1,48 @@
 import { useEffect, useState } from 'react'
 
-const LOADING_MESSAGES = [
+const PALM_LOADING_MESSAGES = [
   'Ellerinizin çizgileri okunuyor...',
-  'Yıldızlarla bağlantı kuruluyor...',
-  'Yaşam enerjiniz hissediliyor...',
-  'Kaderin sırları çözülüyor...',
-  'Ruhunuzun haritası çiziliyor...',
-  'Kozmik enerji analiz ediliyor...',
+  'Avuç tepeleri ve işaretler inceleniyor...',
+  'Yaşam ve kalp çizgisi çözümleniyor...',
+  'Kaderin sırları açığa çıkarılıyor...',
+  'Cheiro ekolü derin işaretler taranıyor...',
+  'Kozmik el haritanız hazırlanıyor...',
 ]
 
-export function LoadingCrystal() {
+const HOROSCOPE_LOADING_MESSAGES = [
+  'Gezegen konumları ve burcunuz hesaplanıyor...',
+  'Hayat Yolu Sayınız (Kader Sayısı) analiz ediliyor...',
+  'İsminizin Pisagorik harf frekansı çözülüyor...',
+  'Kadim astroloji ve yıldız haritası taranıyor...',
+  'Doğum saati ve element dengesi kuruluyor...',
+  'Kozmik portreniz tamamlanıyor...',
+]
+
+interface LoadingCrystalProps {
+  mode?: 'palm' | 'horoscope'
+  title?: string
+  icon?: string
+  messages?: string[]
+}
+
+export function LoadingCrystal({
+  mode = 'palm',
+  title,
+  icon,
+  messages,
+}: LoadingCrystalProps) {
+  const activeMessages = messages || (mode === 'horoscope' ? HOROSCOPE_LOADING_MESSAGES : PALM_LOADING_MESSAGES)
+  const activeTitle = title || (mode === 'horoscope' ? 'Astroloji & Sayı Analizi Yapılıyor' : 'El Okuması Yapılıyor')
+  const activeIcon = icon || (mode === 'horoscope' ? '♈' : '🔮')
+
   const [msgIdx, setMsgIdx] = useState(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setMsgIdx((i) => (i + 1) % LOADING_MESSAGES.length)
+      setMsgIdx((i) => (i + 1) % activeMessages.length)
     }, 2200)
     return () => clearInterval(interval)
-  }, [])
+  }, [activeMessages.length])
 
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6 gap-10">
@@ -59,7 +84,7 @@ export function LoadingCrystal() {
           className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-2xl"
           style={{ background: 'radial-gradient(circle, rgba(201,169,110,0.1) 0%, transparent 70%)' }}
         >
-          🔮
+          {activeIcon}
         </div>
 
         {/* Twinkle stars */}
@@ -88,14 +113,14 @@ export function LoadingCrystal() {
           className="text-2xl sm:text-3xl font-serif text-gradient-mystic"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}
         >
-          El Okuması Yapılıyor
+          {activeTitle}
         </h2>
         <p
           key={msgIdx}
           className="text-sm animate-fade-in"
           style={{ color: 'var(--cream-dim)', minHeight: '1.4em' }}
         >
-          {LOADING_MESSAGES[msgIdx]}
+          {activeMessages[msgIdx]}
         </p>
 
         {/* Progress dots */}
