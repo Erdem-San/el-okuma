@@ -7,22 +7,41 @@ export const Route = createFileRoute('/admin/')({
   component: AdminPage,
 })
 
-// Proje içindeki pdfler klasöründe bulunan varsayılan hazır El Falı kitapları
+// Proje içindeki pdfler/el-fali klasöründe bulunan varsayılan hazır El Falı kitapları
 const PALM_PRESET_PDFS = [
   {
     name: "Cheiro's Language of the Hand (1897 - B/W)",
-    path: '/pdfler/cheiroslanguageo00hamo_bw.pdf',
+    path: '/pdfler/el-fali/cheiroslanguageo00hamo_bw.pdf',
     fileName: 'cheiroslanguageo00hamo_bw.pdf',
   },
   {
     name: 'Palmistry For All - Cheiro (Text)',
-    path: '/pdfler/2015.219079.Palmistry-For_text.pdf',
+    path: '/pdfler/el-fali/2015.219079.Palmistry-For_text.pdf',
     fileName: '2015.219079.Palmistry-For_text.pdf',
   },
   {
     name: 'The Laws of Scientific Hand Reading - Benham',
-    path: '/pdfler/2015.200302.The-Laws_text.pdf',
+    path: '/pdfler/el-fali/2015.200302.The-Laws_text.pdf',
     fileName: '2015.200302.The-Laws_text.pdf',
+  },
+]
+
+// Proje içindeki pdfler/burc klasöründe bulunan varsayılan hazır Burç & Astroloji kitapları
+const HOROSCOPE_PRESET_PDFS = [
+  {
+    name: 'An Introduction to Astrology - William Lilly',
+    path: '/pdfler/burc/2015.42981.An-Introduction-To-Astrology_text.pdf',
+    fileName: '2015.42981.An-Introduction-To-Astrology_text.pdf',
+  },
+  {
+    name: "Ptolemy's Tetrabiblos - Claudius Ptolemy",
+    path: '/pdfler/burc/ptolemystetrabib00ptol.pdf',
+    fileName: 'ptolemystetrabib00ptol.pdf',
+  },
+  {
+    name: 'Astrological Elements & Planetary Influences',
+    path: '/pdfler/burc/bub_gb_8CwSAAAAYAAJ.pdf',
+    fileName: 'bub_gb_8CwSAAAAYAAJ.pdf',
   },
 ]
 
@@ -76,8 +95,11 @@ function AdminPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Otomatik senkron: pdfler klasöründeki dosyaları kontrol et
-  const loadPresetDoc = async (preset: typeof PALM_PRESET_PDFS[0]) => {
-    if (docs.some(d => (d.name === preset.fileName || d.name === preset.name) && d.category === 'palm')) {
+  const loadPresetDoc = async (
+    preset: { name: string; path: string; fileName: string },
+    category: 'palm' | 'horoscope'
+  ) => {
+    if (docs.some(d => (d.name === preset.fileName || d.name === preset.name) && d.category === category)) {
       return
     }
     setLoadingPreset(preset.fileName)
@@ -93,7 +115,7 @@ function AdminPage() {
         uploadedAt: Date.now(),
         base64,
         mimeType: 'application/pdf',
-        category: 'palm',
+        category,
       }
       addDoc(doc)
     } catch (err) {
@@ -209,12 +231,12 @@ function AdminPage() {
             </button>
           </div>
 
-          {/* EL FALI KATEGORİSİ İÇERİĞİ */}
+          {/* 1. EL FALI KATEGORİSİ HAZIR KİTAPLARI */}
           {activeCategory === 'palm' && (
             <div className="mystic-card p-5 space-y-3" style={{ border: '1px solid var(--border-gold)' }}>
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--gold)' }}>
-                  📁 Projedeki Hazır El Falı Kitapları
+                  📁 Projedeki Hazır El Falı Kitapları (pdfler/el-fali)
                 </p>
                 <span className="text-xs" style={{ color: 'var(--cream-dim)', opacity: 0.6 }}>3 Kitap Mevcut</span>
               </div>
@@ -245,7 +267,7 @@ function AdminPage() {
                         </span>
                       ) : (
                         <button
-                          onClick={() => loadPresetDoc(preset)}
+                          onClick={() => loadPresetDoc(preset, 'palm')}
                           disabled={isLoading}
                           className="text-xs px-3 py-1.5 rounded-lg transition active:scale-95 font-medium flex items-center gap-1"
                           style={{
@@ -264,28 +286,62 @@ function AdminPage() {
             </div>
           )}
 
-          {/* BURÇ & NUMEROLOJİ KATEGORİSİ BİLGİ KARTI */}
+          {/* 2. BURÇ & NUMEROLOJİ KATEGORİSİ HAZIR KİTAPLARI */}
           {activeCategory === 'horoscope' && (
             <div className="mystic-card p-5 space-y-3" style={{ border: '1px solid rgba(168,85,247,0.3)' }}>
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold uppercase tracking-wider text-purple-300">
-                  ✨ Burç, Astroloji & Numeroloji Kitaplığı
+                  📁 Projedeki Hazır Burç & Astroloji Kitapları (pdfler/burc)
                 </p>
-                <span className="text-xs text-purple-300/60">Kategori: Astroloji</span>
+                <span className="text-xs text-purple-300/60">3 Kitap Mevcut</span>
               </div>
               <p className="text-xs leading-relaxed text-neutral-300">
-                Astroloji, Hayat Yolu Sayısı (Numeroloji) veya İsim Analizi kitaplarınızı bu alana yükleyin. Buraya eklenen PDF'ler sadece <strong>Burç & Numeroloji</strong> bölümünde taranır; el falı analizlerini yormaz ve token harcamaz.
+                Ptolemy's Tetrabiblos ve William Lilly'nin klasik astroloji eserleri. Burç analizlerinde sadece bu kitaplar referans alınır:
               </p>
-              <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-800/30 text-xs text-purple-200/90 flex items-start gap-2">
-                <span className="text-sm">💡</span>
-                <p>
-                  <strong>Neden şu an 0 kitap görünüyor?</strong> Çünkü indirdiğimiz 3 adet Cheiro/Benham kitabı el falı kitabı olduğu için <strong>"🖐 El Falı Kitaplığı"</strong> sekmesinde kayıtlıdır. Burç ve Numeroloji için indireceğiniz yeni PDF'leri aşağıdaki alana sürükleyip bırakabilir veya projedeki <code className="text-amber-300">pdfler/burc</code> klasörüne atabilirsiniz!
-                </p>
+
+              <div className="space-y-2 pt-1">
+                {HOROSCOPE_PRESET_PDFS.map((preset) => {
+                  const isLoaded = docs.some(d => d.name === preset.fileName && d.category === 'horoscope')
+                  const isLoading = loadingPreset === preset.fileName
+
+                  return (
+                    <div key={preset.fileName} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-purple-900/30">
+                      <div className="min-w-0 pr-2">
+                        <p className="text-xs font-medium truncate text-purple-100">
+                          {preset.name}
+                        </p>
+                        <p className="text-[11px] mt-0.5 text-purple-300/40">
+                          {preset.fileName}
+                        </p>
+                      </div>
+
+                      {isLoaded ? (
+                        <span className="text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 font-medium"
+                          style={{ background: 'rgba(34,197,94,0.1)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)' }}>
+                          ✓ Hafızada
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => loadPresetDoc(preset, 'horoscope')}
+                          disabled={isLoading}
+                          className="text-xs px-3 py-1.5 rounded-lg transition active:scale-95 font-medium flex items-center gap-1"
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(168,85,247,0.3), rgba(124,77,138,0.4))',
+                            border: '1px solid rgba(168,85,247,0.4)',
+                            color: '#c084fc',
+                          }}
+                        >
+                          {isLoading ? 'Ekleniyor...' : '+ Hafızaya Al'}
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
 
-          {/* Upload Zone (Seçili Kategoriye Dosya Ekleme) */}
+          {/* Upload Zone (Seçili Kategoriye Ekstra Dosya Ekleme) */}
           <div
             className="rounded-2xl border-2 border-dashed p-8 text-center transition cursor-pointer"
             style={{
@@ -308,7 +364,7 @@ function AdminPage() {
                 <div className="text-4xl">{activeCategory === 'palm' ? '📥' : '🌌'}</div>
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--cream)' }}>
-                    {activeCategory === 'palm' ? 'El Falı PDF' : 'Burç / Numeroloji PDF'} dosyası sürükleyin veya tıklayın
+                    Farklı bir {activeCategory === 'palm' ? 'El Falı' : 'Burç / Numeroloji'} PDF dosyası ekleyin
                   </p>
                   <p className="text-xs mt-1" style={{ color: 'var(--cream-dim)', opacity: 0.5 }}>
                     Maksimum 100MB · Yalnızca {activeCategory === 'palm' ? 'El Falı' : 'Burç'} analizlerinde kullanılacaktır
@@ -321,7 +377,7 @@ function AdminPage() {
                     color: activeCategory === 'palm' ? 'var(--gold)' : '#c084fc',
                     fontSize: 13,
                   }}>
-                  + {activeCategory === 'palm' ? 'El Falı Kitabı Ekle' : 'Burç/Numeroloji Kitabı Ekle'}
+                  + {activeCategory === 'palm' ? 'El Falı Kitabı Yükle' : 'Burç/Numeroloji Kitabı Yükle'}
                 </div>
               </div>
             )}
@@ -353,7 +409,7 @@ function AdminPage() {
               <div className="text-center py-6 space-y-2 rounded-xl border border-dashed border-neutral-800">
                 <div className="text-3xl opacity-30">📂</div>
                 <p className="text-xs" style={{ color: 'var(--cream-dim)', opacity: 0.5 }}>
-                  Bu kategoride henüz aktif kitap yok. Yukarıdaki hazır kitaplardan ekleyin veya yeni bir PDF yükleyin.
+                  Bu kategoride henüz aktif kitap yok. Yukarıdaki hazır kitaplardan "+ Hafızaya Al" butonuna basarak ekleyin.
                 </p>
               </div>
             ) : (
