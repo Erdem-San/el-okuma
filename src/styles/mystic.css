@@ -1,0 +1,356 @@
+@import "tailwindcss";
+
+/* ─── Mystik Tema Değişkenleri ─────────────────────────────────────────── */
+:root {
+  --bg-deep: #080503;
+  --bg-card: #110d09;
+  --bg-card2: #1a1208;
+  --gold: #c9a96e;
+  --gold-light: #e4c992;
+  --gold-dim: #8a6d3b;
+  --purple: #7c4d8a;
+  --purple-light: #a47bb5;
+  --cream: #e8d5b5;
+  --cream-dim: #a89070;
+  --border: #2e2018;
+  --border-gold: #4a3520;
+  --glow-gold: rgba(201, 169, 110, 0.15);
+  --glow-purple: rgba(124, 77, 138, 0.15);
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--cream);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+h1, h2, h3 {
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+}
+
+/* ─── Kaydırma Çubuğu ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
+
+/* ─── Yıldız Arka Plan ──────────────────────────────────────────────────── */
+.stars-bg {
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(201,169,110,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 60%, rgba(201,169,110,0.25) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 20%, rgba(255,255,255,0.2) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 80%, rgba(201,169,110,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.15) 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 90%, rgba(124,77,138,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 20% 45%, rgba(255,255,255,0.1) 0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 55%, rgba(201,169,110,0.2) 0%, transparent 100%);
+}
+
+/* ─── Glow Efektler ─────────────────────────────────────────────────────── */
+.glow-gold {
+  box-shadow: 0 0 20px var(--glow-gold), 0 0 60px var(--glow-gold);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px var(--glow-purple), 0 0 60px var(--glow-purple);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 20px rgba(201,169,110,0.5);
+}
+
+/* ─── Animasyonlar ──────────────────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; filter: blur(20px); }
+  50% { opacity: 0.8; filter: blur(25px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes draw-line {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes typing-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+.animate-spin-slow { animation: spin-slow 8s linear infinite; }
+.animate-spin-reverse { animation: spin-reverse 6s linear infinite; }
+.animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+.animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+.animate-twinkle { animation: twinkle 2s ease-in-out infinite; }
+
+/* Stagger animasyonu için */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* ─── Gradient Text ─────────────────────────────────────────────────────── */
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dim) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-mystic {
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--purple-light) 50%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Mistik Kart ───────────────────────────────────────────────────────── */
+.mystic-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(20, 14, 8, 0.95) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+
+.mystic-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+}
+
+/* ─── İnput Stilleri ────────────────────────────────────────────────────── */
+.mystic-input {
+  background: rgba(17, 13, 9, 0.8);
+  border: 1px solid var(--border);
+  color: var(--cream);
+  border-radius: 10px;
+  padding: 12px 16px;
+  width: 100%;
+  font-size: 15px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+}
+
+.mystic-input::placeholder {
+  color: var(--cream-dim);
+  opacity: 0.5;
+}
+
+.mystic-input:focus {
+  outline: none;
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(201,169,110,0.1);
+}
+
+/* ─── Buton Stilleri ────────────────────────────────────────────────────── */
+.btn-mystic-primary {
+  background: linear-gradient(135deg, #8a5c2a 0%, #c9a96e 50%, #8a5c2a 100%);
+  background-size: 200% 100%;
+  color: #0a0603;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 14px 32px;
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  transition: background-position 0.4s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 24px rgba(201,169,110,0.2);
+  border: none;
+  cursor: pointer;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+}
+
+.btn-mystic-primary:hover {
+  background-position: 100% 0;
+  box-shadow: 0 4px 32px rgba(201,169,110,0.35);
+  transform: translateY(-1px);
+}
+
+.btn-mystic-primary:active {
+  transform: translateY(0);
+}
+
+.btn-mystic-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-mystic-ghost {
+  background: transparent;
+  color: var(--cream-dim);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-mystic-ghost:hover {
+  border-color: var(--gold-dim);
+  color: var(--cream);
+}
+
+/* ─── Photo Slot ────────────────────────────────────────────────────────── */
+.photo-slot {
+  aspect-ratio: 3/4;
+  border: 1.5px dashed var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: rgba(17,13,9,0.5);
+  overflow: hidden;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.photo-slot:hover,
+.photo-slot:focus-within {
+  border-color: var(--gold-dim);
+  background: rgba(201,169,110,0.04);
+}
+
+.photo-slot.has-photo {
+  border-style: solid;
+  border-color: var(--border-gold);
+}
+
+/* ─── Chat Bubble ───────────────────────────────────────────────────────── */
+.chat-bubble-user {
+  background: linear-gradient(135deg, rgba(201,169,110,0.15), rgba(201,169,110,0.08));
+  border: 1px solid rgba(201,169,110,0.2);
+  border-radius: 18px 18px 4px 18px;
+  padding: 12px 16px;
+  max-width: 80%;
+  margin-left: auto;
+  color: var(--cream);
+}
+
+.chat-bubble-ai {
+  background: linear-gradient(135deg, rgba(124,77,138,0.12), rgba(124,77,138,0.06));
+  border: 1px solid rgba(124,77,138,0.2);
+  border-radius: 18px 18px 18px 4px;
+  padding: 12px 16px;
+  max-width: 88%;
+  color: var(--cream);
+}
+
+/* ─── Loading Crystal ───────────────────────────────────────────────────── */
+.crystal-ring {
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.crystal-ring-1 {
+  border-top-color: var(--gold);
+  border-right-color: rgba(201,169,110,0.3);
+}
+
+.crystal-ring-2 {
+  border-bottom-color: var(--purple-light);
+  border-left-color: rgba(124,77,138,0.3);
+}
+
+/* ─── PWA safe area ─────────────────────────────────────────────────────── */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.safe-top { padding-top: env(safe-area-inset-top, 0px); }
+
+/* ─── Prose ─────────────────────────────────────────────────────────────── */
+.mystic-prose p { margin-bottom: 0.75em; line-height: 1.75; }
+.mystic-prose p:last-child { margin-bottom: 0; }
+
+/* ─── Textarea ──────────────────────────────────────────────────────────── */
+.mystic-textarea {
+  background: rgba(17, 13, 9, 0.8);
+  border: 1px solid var(--border);
+  color: var(--cream);
+  border-radius: 12px;
+  padding: 14px 16px;
+  width: 100%;
+  font-size: 15px;
+  line-height: 1.6;
+  resize: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.mystic-textarea::placeholder {
+  color: var(--cream-dim);
+  opacity: 0.5;
+}
+
+.mystic-textarea:focus {
+  outline: none;
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(201,169,110,0.1);
+}
+
+/* ─── Section Reveal ────────────────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* ─── Mobile-first fotoğraf grid ────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .photo-slot {
+    aspect-ratio: 1/1;
+  }
+}
